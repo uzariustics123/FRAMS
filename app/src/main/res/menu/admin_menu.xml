@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <group android:checkableBehavior="single" >
+        <item
+            android:id="@+id/admin_menu_employee"
+            android:icon="@drawable/ic_people"
+            app:actionViewClass="android.widget.TextView"
+            android:title="Employees"/>
+        <item
+            android:id="@+id/admin_menu_devices"
+            app:actionViewClass="android.widget.TextView"
+            android:icon="@drawable/ic_devices"
+            android:title="Devices"/>
+        <item
+            android:id="@+id/pincode"
+            app:actionViewClass="android.widget.TextView"
+            android:icon="@drawable/baseline_photo_camera_front_24"
+            android:title="Pin Code"/>
+
+
+    </group>
+    <item android:title="Session">
+        <menu>
+            <group>
+                <item
+                    android:id="@+id/admin_menu_logout"
+                    android:icon="@drawable/ic_logout"
+                    android:title="logout"/>
+                <item
+                    android:id="@+id/admin_menu_exit"
+                    android:icon="@drawable/ic_exit_to_app"
+                    android:title="Exit"/>
+            </group>
+        </menu>
+    </item>
+
+</menu>

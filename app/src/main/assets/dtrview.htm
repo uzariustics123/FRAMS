@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html dir='ltr' lang='en'>
+<head>
+    <meta charset='UTF-8' />
+    <meta http-equiv='X-UA-Compatible' content='IE=edge' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <style type='text/css'>
+      body {
+        background-color: #f7f7f7;
+        font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS',
+          sans-serif;
+        color: #333;
+        text-align: left;
+        font-size: 12px;
+        margin: 0;
+      }
+      .container {
+        margin: 0 auto;
+        margin-top: 35px;
+        padding: 40px;
+        width: 750px;
+        height: auto;
+        background-color: #fff;
+      }
+      th {
+        font-weight: normal;
+        padding: opx;
+        margin: 0px auto;
+      }
+      td {
+        padding-top: 4px;
+        padding-bottom: 4px;
+        padding-left: 4px;
+        padding-right: 8px;
+        text-align: center;
+        font-size: 10px;
+        max-lines: 1;
+        white-space: nowrap;
+      }
+      .center-text {
+        text-align: center;
+      }
+      .left-text{
+        padding-top: 8px;
+        text-align: start;
+      }
+      .table-root {
+        display: flex;
+      }
+      .table-left {
+        margin-right: 50px;
+      }
+      table {
+        /* border: 1px solid #333; */
+        border-collapse: collapse;
+        margin: 0 auto;
+        width: 740px;
+      }
+      .dtr-title {
+        font-size: 12sp;
+        margin-bottom: 15px;
+        margin-top: 18px;
+        max-lines: 1;
+        font-weight: bold;
+      }
+      .employee-name {
+        font-size: 11ps;
+        margin-top: 18px;
+        max-lines: 1;
+        font-weight: bold;
+        text-align: center;
+      }
+      .underline {
+        border-bottom: 1px solid black;
+      }
+      .space-top {
+        margin-top: 18px;
+      }
+      .space-bot {
+        padding-bottom: 18px;
+      }
+      .borderd {
+        border: 1px solid black;
+      }
+      .padd {
+        padding: 12px;
+      }
+      .space-top-table {
+        padding-top: 15px;
+      }
+      .dtr-col {
+        border: 1px solid black;
+        padding: 4px;
+
+        font-size: 12px;
+        text-align: center;
+      }
+      h4,
+      p {
+        margin: 0px;
+      }
+      .keys{
+        text-align: center;
+        /* padding-top: 1px;
+        padding-bottom: 1px; */
+        border: 1px solid black;
+      }
+      .total-key{
+        text-align: center;
+        font-size: 12px;
+        font-weight: bold;
+        border: 1px solid black;
+      }
+      .signature{
+        padding-top: 40px;
+        border-bottom: 1px solid black;
+      }
+      .signature-below{
+        font-weight: bolder;
+      }
+    </style>
+</head>
+<body>
+<div class='container'>
+    <p>Civil Service Form No. 48</p>
+    <div class='table-root'>
+        <table class='table-left'>
+            <caption class='dtr-title'>
+                DAILY TIME RECORD
+            </caption>
+            <thead>
+            <tr>
+                <th colspan='7' class='employee-name underline'>
+                    Dela Cruz, Juan
+                </th>
+            </tr>
+            <tr>
+                <th colspan='7' class='center-text space-bot'>(NAME)</th>
+            </tr>
+            <tr>
+                <th class='space-top' colspan='2'>For the month of</td>
+                <th class='underline center-text' colspan='5'>Jan 23, 2023</td>
+            </tr>
+            <tr>
+                <th class='space-top space-top-table space-bot' colspan='2'>
+                    Official hours for arrival and departure
+                </th>
+                <th class='space-top-table space-bot center-text' colspan='5'>
+                    8:00am to 12:00pm<br />1:00pm to 5:00pm
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th class='dtr-col'>Day</th>
+                <th class='dtr-col' colspan='2'>AM</th>
+                <th class='dtr-col' colspan='2'>PM</th>
+                <th class='dtr-col' colspan='2'>UNDERTIME</th>
+            </tr>
+            <tr>
+                <td class='keys'>Date</td>
+                <td class='keys'>Arrival</td>
+                <td class='keys'>Departure</td>
+                <td class='keys'>Arrival</td>
+                <td class='keys'>Departure</td>
+                <td class='keys'>Hours</td>
+                <td class='keys'>Minutes</td>
+            </tr>
+            <tr>
+                <td class='borderd'>1</td>
+                <td class='borderd'></td>
+                <td class='borderd'></td>
+                <td class='borderd'>12:32 pm</td>
+                <td class='borderd'>12:32 pm</td>
+                <td class='borderd'>0</td>
+                <td class='borderd'>0</td>
+            </tr>
+            <tr>
+                <td class='total-key' colspan='5'>TOTAL</td>
+                <td class='keys'>0</td>
+                <td class='keys'>0</td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan='7' class='left-text'>I certify on my honor that the above is a true and correct report of the<br>
+                    hours work performed, record of which was a daily at the time of arrival<br>
+                    and departure from office.</td>
+            </tr>
+            <tr><td colspan='7' class='signature'></td></tr>
+            <tr><td colspan='7' class='signature-below'>VERIFIED as to the prescribed office hours:</td></tr>
+            <tr><td colspan='7' class='signature'></td></tr>
+            <tr><td colspan='7' class='signature-below'>In Charge</td></tr>
+            </tfoot>
+        </table>
+        &nbsp;
+        <!-- 2nd table -->
+        <table class='table-right'>
+            <caption class='dtr-title'>
+                DAILY TIME RECORD
+            </caption>
+            <thead>
+            <tr>
+                <th colspan='7' class='employee-name underline'>
+                    Dela Cruz, Juan
+                </th>
+            </tr>
+            <tr>
+                <th colspan='7' class='center-text space-bot'>(NAME)</th>
+            </tr>
+            <tr>
+                <th class='space-top' colspan='2'>For the month of</td>
+                <th class='underline center-text' colspan='5'>Jan 23, 2023</td>
+            </tr>
+            <tr>
+                <th class='space-top space-top-table space-bot' colspan='2'>
+                    Official hours for arrival and departure
+                </th>
+                <th class='space-top-table space-bot center-text' colspan='5'>
+                    8:00am to 12:00pm<br />1:00pm to 5:00pm
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <th class='dtr-col'>Day</th>
+                <th class='dtr-col' colspan='2'>AM</th>
+                <th class='dtr-col' colspan='2'>PM</th>
+                <th class='dtr-col' colspan='2'>UNDERTIME</th>
+            </tr>
+            <tr>
+                <td class='keys'>Date</td>
+                <td class='keys'>Arrival</td>
+                <td class='keys'>Departure</td>
+                <td class='keys'>Arrival</td>
+                <td class='keys'>Departure</td>
+                <td class='keys'>Hours</td>
+                <td class='keys'>Minutes</td>
+            </tr>
+            <tr>
+                <td class='borderd'>1</td>
+                <td class='borderd'></td>
+                <td class='borderd'></td>
+                <td class='borderd'>12:32 pm</td>
+                <td class='borderd'>12:32 pm</td>
+                <td class='borderd'>0</td>
+                <td class='borderd'>0</td>
+            </tr>
+            <tr>
+                <td class='total-key' colspan='5'>TOTAL</td>
+                <td class='keys'>0</td>
+                <td class='keys'>0</td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr>
+                <td colspan='7' class='left-text'>I certify on my honor that the above is a true and correct report of the<br>
+                    hours work performed, record of which was a daily at the time of arrival<br>
+                    and departure from office.</td>
+            </tr>
+            <tr><td colspan='7' class='signature'></td></tr>
+            <tr><td colspan='7' class='signature-below'>VERIFIED as to the prescribed office hours:</td></tr>
+            <tr><td colspan='7' class='signature'></td></tr>
+            <tr><td colspan='7' class='signature-below'>In Charge</td></tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+</body>
+</html>

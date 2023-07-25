@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:id="@+id/bgcard"
+    android:orientation="vertical"
+    android:background="@drawable/bttm_sheet_bg"
+    android:padding="@dimen/spacing_small"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <LinearLayout
+        android:paddingTop="@dimen/spacing_medium"
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <!--        end of header-->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie1"
+            android:layout_width="80dp"
+            android:layout_height="50dp"
+            app:lottie_fileName="84891-error.json"
+            android:padding="@dimen/spacing_small"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="false"
+            android:scaleType="centerCrop" />
+        <TextView
+            android:padding="@dimen/spacing_small"
+            android:id="@+id/msg"
+            android:layout_width="wrap_content"
+            android:text="Please wait"
+            android:textColor="@color/red_600"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+</FrameLayout>

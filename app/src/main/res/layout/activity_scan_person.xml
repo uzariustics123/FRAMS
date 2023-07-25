@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:fitsSystemWindows="true"
+    android:layout_height="match_parent"
+    tools:context=".ScanPerson">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <androidx.camera.view.PreviewView
+            android:id="@+id/previewView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+
+        </androidx.camera.view.PreviewView>
+        <TextView
+            android:id="@+id/captureInfo"
+            android:layout_above="@+id/prevLayout"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:layout_marginTop="@dimen/spacing_xxxlarge"
+            android:layout_centerHorizontal="true"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:text=""/>
+    <LinearLayout
+        android:id="@+id/prevLayout"
+        android:visibility="invisible"
+        android:layout_width="match_parent"
+        android:background="@color/black_overlay"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_middle"
+        android:layout_marginBottom="@dimen/spacing_xlarge"
+        android:layout_alignParentBottom="true">
+        <androidx.cardview.widget.CardView
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            android:id="@+id/imageCard"
+            android:layout_alignParentStart="true"
+            app:cardCornerRadius="25dp">
+            <ImageView
+                android:id="@+id/facePreview"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:background="@android:color/transparent"/>
+        </androidx.cardview.widget.CardView>
+    </LinearLayout>
+        <com.macxs.facerecogz.Utils.GraphicOverlay
+            android:id="@+id/graphicOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+<!--        <com.macxs.facerecogz.Utils.BoundingBoxOverlay-->
+<!--            android:id="@+id/boxDrawer"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"/>-->
+
+    </RelativeLayout>
+    <FrameLayout
+        android:layout_marginTop="25dp"
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:orientation="horizontal">
+        <ImageButton
+            android:background="?selectableItemBackgroundBorderless"
+            android:id="@+id/admin_panel_btn"
+            app:tint="@color/white"
+            android:layout_height="?actionBarSize"
+            android:layout_width="?actionBarSize"
+            app:srcCompat="@drawable/ic_admin_panel_settings" />
+        <ImageButton
+            android:background="?selectableItemBackgroundBorderless"
+            android:id="@+id/rotate_cam"
+            android:layout_gravity="right"
+            app:tint="@color/white"
+            android:layout_height="?actionBarSize"
+            android:layout_width="?actionBarSize"
+            app:srcCompat="@drawable/ic_cameraswitch" />
+    </FrameLayout>
+
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

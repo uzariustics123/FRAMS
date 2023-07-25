@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:fitsSystemWindows="true"
+    android:layout_height="match_parent"
+    tools:context=".ScanPerson">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.camera.view.PreviewView
+            android:id="@+id/previewCamView"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!--        <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton-->
+            <!--            android:id="@+id/faby"-->
+            <!--            android:layout_width="wrap_content"-->
+            <!--            android:layout_height="wrap_content"-->
+            <!--            android:layout_gravity="bottom||center"-->
+            <!--            android:layout_marginBottom="@dimen/spacing_medium"-->
+            <!--            android:backgroundTint="@color/purple_700"-->
+            <!--            android:text="Actions"-->
+            <!--            android:textColor="@color/white"-->
+            <!--            android:textStyle="bold" />-->
+        </androidx.camera.view.PreviewView>
+        <com.macxs.facerecogz.Utils.GraphicOverlay
+            android:id="@+id/graphicOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
+        <TextView
+            android:id="@+id/recogInfo"
+            android:layout_above="@+id/prevLayout"
+android:layout_marginBottom="@dimen/spacing_small"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:layout_marginTop="@dimen/spacing_xxxlarge"
+            android:layout_centerHorizontal="true"
+            android:textAppearance="@style/TextAppearance.AppCompat.Title"
+            android:text="Text"/>
+        <RelativeLayout
+            android:background="@color/black_overlay"
+            android:id="@+id/prevLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="@dimen/spacing_middle"
+            android:layout_marginBottom="@dimen/spacing_xlarge"
+            android:layout_alignParentBottom="true">
+            <androidx.cardview.widget.CardView
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:id="@+id/imageCard"
+                android:layout_alignParentStart="true"
+                app:cardCornerRadius="25dp">
+                <ImageView
+                    android:id="@+id/facePreview"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:background="@android:color/transparent"/>
+            </androidx.cardview.widget.CardView>
+
+            <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+                android:id="@+id/regbtn"
+                android:layout_width="wrap_content"
+                android:visibility="invisible"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="@dimen/spacing_large"
+                android:layout_centerVertical="true"
+                android:backgroundTint="@color/white"
+                android:layout_alignParentEnd="true"
+                android:textColor="@color/black"
+                android:text="Register"/>
+        </RelativeLayout>
+    </RelativeLayout>
+    <FrameLayout
+        android:layout_marginTop="25dp"
+        android:id="@+id/appbar"
+        android:layout_width="match_parent"
+        android:layout_height="?actionBarSize"
+        android:orientation="horizontal">
+        <ImageButton
+            android:background="?selectableItemBackgroundBorderless"
+            android:id="@+id/backBtn"
+            app:tint="@color/white"
+            android:layout_height="?actionBarSize"
+            android:layout_width="?actionBarSize"
+            app:srcCompat="@drawable/ic_chevron_left" />
+        <ImageButton
+            android:background="?selectableItemBackgroundBorderless"
+            android:id="@+id/rotate_cam"
+            android:layout_gravity="right"
+            app:tint="@color/white"
+            android:layout_height="?actionBarSize"
+            android:layout_width="?actionBarSize"
+            app:srcCompat="@drawable/ic_cameraswitch" />
+    </FrameLayout>
+
+
+</FrameLayout>

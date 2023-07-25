@@ -1,0 +1,28 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.AttendanceMonitoring" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/deep_orange_600</item>
+        <item name="colorPrimaryVariant">@color/deep_orange_900</item>
+        <item name="colorOnPrimary">@color/deep_orange_50</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/deep_orange_800</item>
+        <item name="colorSecondaryVariant">@color/deep_orange_400</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowLightStatusBar">true</item>
+<!--        <item name="android:windowLightNavigationBar">true</item>-->
+        <!-- Customize your theme here. -->
+    </style>
+    <style name="Theme.Scanner.Cam" parent="Theme.AttendanceMonitoring">
+        <item name="android:windowTranslucentStatus">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+    </style>
+    <style name="PrintTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+</resources>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:id="@+id/bgcard"
+    android:orientation="vertical"
+    android:background="@drawable/bttm_sheet_bg"
+    android:paddingTop="@dimen/spacing_small"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <!--        end of header-->
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/lottie1"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            app:lottie_colorFilter="@color/grey_90"
+            app:lottie_fileName="slide-loading.json"
+            android:padding="@dimen/spacing_small"
+            app:lottie_autoPlay="true"
+            app:lottie_loop="true"
+            android:scaleType="centerCrop" />
+        <TextView
+            android:paddingTop="@dimen/spacing_small"
+            android:id="@+id/desc"
+            android:layout_width="wrap_content"
+            android:text="Please wait"
+            android:textColor="@color/grey_40"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:layout_height="wrap_content"/>
+
+    </LinearLayout>
+</FrameLayout>

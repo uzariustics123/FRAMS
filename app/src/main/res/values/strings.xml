@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">FRAMS</string>
+    <string name="app_desc">Face Recognition Attendance Management System</string>
+</resources>

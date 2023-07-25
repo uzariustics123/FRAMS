@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1095306580786",
+    "project_id": "frams-ece27",
+    "storage_bucket": "frams-ece27.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1095306580786:android:703676af0ee78488d6fd2b",
+        "android_client_info": {
+          "package_name": "com.macxs.facerecogz"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1095306580786-poe0asihg5t8pb16alnrf8bfeq9e30ul.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAItBPl5Ob3kVnNHyIT6tJgdpGWIazdWms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1095306580786-poe0asihg5t8pb16alnrf8bfeq9e30ul.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
