@@ -3,6 +3,7 @@ package com.macxs.facerecogz.Utils;
 import android.content.Intent;
 import android.util.Log;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -16,7 +17,6 @@ import java.util.Map;
 
 public class GenerateDTR {
 
-    String total = "";
     String[] months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
     public String getHTMLreport(Map<String, Object> employeeData, ArrayList<Map<String, Object>> attendances, int month, int yr) {
@@ -35,10 +35,18 @@ public class GenerateDTR {
         String defOutTimeAMstr  = String.valueOf(employeeData.get("am-out-time"));
         String defInTimePMstr  = String.valueOf(employeeData.get("pm-in-time"));
         String defOutTimePMstr  = String.valueOf(employeeData.get("pm-out-time"));
+
         LocalTime defInTimeAM = LocalTime.parse(defInTimeAMstr, formatter);
         LocalTime defOutTimeAM = LocalTime.parse(defOutTimeAMstr, formatter);
         LocalTime defInTimePM = LocalTime.parse(defInTimePMstr, formatter);
         LocalTime defOutTimePM = LocalTime.parse(defOutTimePMstr, formatter);
+
+        Duration defAmDuration = Duration.between(defInTimeAM, defOutTimeAM);
+        Duration defPmDuration = Duration.between(defInTimePM, defOutTimePM);
+        Duration totalDefDuration = defAmDuration.plus(defPmDuration);
+        long defHrDur = totalDefDuration.toHours();
+        long defMinDur = totalDefDuration.toMinutes() % 60;
+
         Map<String, String> dtrTimeSched = new HashMap<>();
         dtrTimeSched.put("am-in-time", defInTimeAMstr);
         dtrTimeSched.put("am-out-time", defOutTimeAMstr);
@@ -48,15 +56,34 @@ public class GenerateDTR {
         Log.e("for the month of", preferedDate.getMonth().toString());
         Log.e("attends", String.valueOf(attendances.size()));
 
-        for (int day = 1; day < numberOfDays; day++) {//count number of days of the month
+        //count number of days of the month
+        for (int day = 1; day < numberOfDays; day++) {
             dtrRow += "<tr>";
             dtrRow += "<td class='borderd'>" + String.valueOf(day) + "</td>";
             String arrivalAM = "<td class='borderd'>--:-- --</td>";
             String departureAM = "<td class='borderd'>--:-- --</td>";
             String arrivalPM = "<td class='borderd'>--:-- --</td>";
             String departurePM = "<td class='borderd'>--:-- --</td>";
-            String amLate = "0hr : 0mins";
-            String pmLate = "0hr : 0mins";
+            String totalLate = "0hr : 0mins";
+            String undertime = "0hr : 0mins";
+            boolean amAttendanceIsDone = false;
+            boolean pmAttendanceIsDone = false;
+            int totalLateHr = 0;
+            int totalLateMin = 0;
+            int totalUndertimeHr = 0;
+            int totalUndertimeMin = 0;
+
+            LocalTime attendedAmInTime = null;
+            LocalTime attendedAmOutTime = null;
+            LocalTime attendedPmInTime = null;
+            LocalTime attendedPmOutTime = null;
+
+
+            LocalTime amEndTime = LocalTime.parse("11:59 AM", formatter);
+            LocalTime pmEndTime = LocalTime.parse("5:00 PM", formatter);
+//                        LocalTime amStartTime = LocalTime.parse("8:00 AM", formatter);
+            LocalTime pmStartTime = LocalTime.parse("1:00 PM", formatter);
+            //each attendance
             for (int attTimes = 0; attTimes < attendances.size(); attTimes++) {
                 try {
                     Map attendance = attendances.get(attTimes);
@@ -64,12 +91,8 @@ public class GenerateDTR {
 
                         String timeStr = attendance.get("time").toString();
                         LocalTime time = LocalTime.parse(timeStr, formatter);
-                        LocalTime amEndTime = LocalTime.parse("11:59 AM", formatter);
-                        LocalTime pmEndTime = LocalTime.parse("5:00 PM", formatter);
-//                        LocalTime amStartTime = LocalTime.parse("8:00 AM", formatter);
-                        LocalTime pmStartTime = LocalTime.parse("1:00 PM", formatter);
-
                         String type = attendance.get("type").toString();
+
                         //am in
                         if (timeStr.contains("AM") && type.equalsIgnoreCase("arrival")) {
                             arrivalAM = "<td class='borderd'>" + timeStr + "</td>";
@@ -77,13 +100,17 @@ public class GenerateDTR {
                             if (time.isAfter(defInTimeAM) ){
                                 int amLateHr = time.minusHours(defInTimeAM.getHour()).getHour();
                                 int amLateMin = time.minusMinutes(defInTimeAM.getMinute()).getMinute();
-                                amLate = String.valueOf(amLateHr)+"hr : "+ String.valueOf(amLateMin)+"mins";
+                                totalLateHr += amLateHr;
+                                totalLateMin += amLateMin;
                             }
+                            attendedAmInTime = time;
 
                         }
                         //am out
                         else if (timeStr.contains("AM") || (time.isAfter(amEndTime) && time.isBefore(pmStartTime)) && type.equalsIgnoreCase("departure")) {
                             departureAM = "<td class='borderd'>" + timeStr + "</td>";
+                            amAttendanceIsDone = true;
+                            attendedAmOutTime = time;
                         }
                         //pm in
                         else if (timeStr.contains("PM") && type.equalsIgnoreCase("arrival")) {
@@ -91,15 +118,18 @@ public class GenerateDTR {
                             if (time.isAfter(defInTimePM) ){
                                 int pmLateHr = time.minusHours(defInTimePM.getHour()).getHour();
                                 int pmLateMin = time.minusMinutes(defInTimePM.getMinute()).getMinute();
-                                pmLate = String.valueOf(pmLateHr)+"hr : "+ String.valueOf(pmLateMin)+"mins";
+                                totalLateHr += pmLateHr;
+                                totalLateMin += pmLateMin;
                             }
+                            attendedPmInTime = time;
                         }
                         //out pm
                         else if (timeStr.contains("PM") && type.equalsIgnoreCase("departure")) {
                             departurePM = "<td class='borderd'>" + timeStr + "</td>";
-                        } else {
-
+                            pmAttendanceIsDone = true;
+                            attendedPmOutTime = time;
                         }
+
                         Log.e("dtr", "day: " + String.valueOf(day) + " time:" + timeStr + " type:" + type + " month:" + String.valueOf(month));
                     }
                 } catch (Exception e) {
@@ -107,9 +137,40 @@ public class GenerateDTR {
                 }
 
             }
-            String latetimeAM = "<td class='borderd'>"+amLate+"</td>";
-            String latetimePM = "<td class='borderd'>"+pmLate+"</td>";
-            dtrRow += arrivalAM + departureAM + arrivalPM + departurePM + latetimeAM + latetimePM;
+            if (amAttendanceIsDone && pmAttendanceIsDone){
+                Duration amDuration = Duration.between(attendedAmInTime, attendedAmOutTime);
+                Duration pmDuration = Duration.between(attendedPmInTime, attendedPmOutTime);
+                Duration totalRenderedTime = amDuration.plus(pmDuration);
+                Log.e("total rendered hr time", String.valueOf(totalRenderedTime.toHours()));
+                Log.e("total rendered min time", String.valueOf(totalRenderedTime.toMinutes() % 60));
+                Duration undertimeDuration = totalDefDuration.minus(totalRenderedTime);
+                long hrDur = undertimeDuration.toHours();
+                long minDur = undertimeDuration.toMinutes() % 60;
+                if (hrDur <= 0){
+                    undertime = String.valueOf(hrDur)  +"hrs : " + String.valueOf(minDur % 60)+ "mins";
+                }else {
+                    undertime = String.valueOf(hrDur)  +"hrs : " + String.valueOf(minDur % 60)+ "mins";
+                }
+
+
+            } else if (amAttendanceIsDone) {
+                Duration amDuration = Duration.between(attendedAmInTime, attendedAmOutTime);
+                Duration undertimeDuration = totalDefDuration.minus(amDuration);
+                long hrDur = undertimeDuration.toHours();
+                long minDur = undertimeDuration.toMinutes() % 60;
+                undertime = String.valueOf(hrDur)  +"hrs : " + String.valueOf(minDur % 60)+ "mins";
+            } else if (pmAttendanceIsDone) {
+                Duration pmDuration = Duration.between(attendedPmInTime, attendedPmOutTime);
+                Duration undertimeDuration = totalDefDuration.minus(pmDuration);
+                long hrDur = undertimeDuration.toHours();
+                long minDur = undertimeDuration.toMinutes() % 60;
+                undertime = String.valueOf(hrDur)  +"hrs : " + String.valueOf(minDur % 60)+ "mins";
+            }
+            totalLate = String.valueOf(totalLateHr)  +"hrs : " + String.valueOf(totalLateMin % 60)+ "mins";
+            String totalLatestr = "<td class='borderd'>"+totalLate+"</td>";
+            String underTime = "<td class='borderd'>"+undertime+ "</td>";
+
+            dtrRow += arrivalAM + departureAM + arrivalPM + departurePM + totalLatestr + underTime;
 
         }
         dtrRow += "</tr>";
@@ -272,7 +333,7 @@ public class GenerateDTR {
                 "                  <th class='dtr-col'>Day</th>\n" +
                 "                  <th class='dtr-col' colspan='2'>AM</th>\n" +
                 "                  <th class='dtr-col' colspan='2'>PM</th>\n" +
-                "                  <th class='dtr-col' colspan='2'>LATE</th>\n" +
+                "                  <th class='dtr-col' colspan='2'>Late & Undertime</th>\n" +
                 "                </tr>\n" +
                 "                <tr>\n" +
                 "                    <td class='keys'>Date</td>\n" +
@@ -280,8 +341,8 @@ public class GenerateDTR {
                 "                    <td class='keys'>Departure</td>\n" +
                 "                    <td class='keys'>Arrival</td>\n" +
                 "                    <td class='keys'>Departure</td>\n" +
-                "                    <td class='keys'>AM</td>\n" +
-                "                    <td class='keys'>PM</td>\n" +
+                "                    <td class='keys'>Late</td>\n" +
+                "                    <td class='keys'>Undertime</td>\n" +
                 "                  </tr>\n" +
                 "                <tr>\n" +
                 dtr +
