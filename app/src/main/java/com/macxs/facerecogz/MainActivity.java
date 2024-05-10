@@ -29,6 +29,7 @@ import com.github.mikephil.charting.data.PieEntry;
 import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -135,8 +136,15 @@ public class MainActivity extends AppCompatActivity {
                 };
         toggle.syncState();
         binding.drawer.addDrawerListener(toggle);
+        headerView = binding.navigation.getHeaderView(0);
+        pieChart = headerView.findViewById(R.id.pie_chart);
         setUpPieChart();
         navigationMenus();
+        Chip detailChip = headerView.findViewById(R.id.detailAttChip);
+        Intent reportIntent = new Intent(this, OverallDTRView.class);
+        detailChip.setOnClickListener(view -> {
+            startActivity(reportIntent);
+        });
     }
 
     private void navigationMenus() {
@@ -234,8 +242,6 @@ public class MainActivity extends AppCompatActivity {
         });
     }
     private void setUpPieChart(){
-        headerView = binding.navigation.getHeaderView(0);
-        pieChart = headerView.findViewById(R.id.pie_chart);
         pieChart.setDragDecelerationFrictionCoef(0.95f);
         pieChart.setUsePercentValues(true);
         pieChart.setExtraOffsets(5, 10, 5, 5);
@@ -270,6 +276,7 @@ public class MainActivity extends AppCompatActivity {
         db.collection("attendance")
                 .whereEqualTo("month", monthInd + 1)
                 .whereEqualTo("year", yearNow)
+                .whereEqualTo("day", localDateTime.getDayOfMonth())
                 .get()
                 .addOnCompleteListener(task -> {
                     ArrayList<Map<String, Object>> attendances = new ArrayList<>();

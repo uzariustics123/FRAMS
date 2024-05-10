@@ -4,6 +4,7 @@ import static android.content.ContentValues.TAG;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -12,6 +13,7 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -20,7 +22,9 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.chip.Chip;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.timepicker.MaterialTimePicker;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
@@ -38,7 +42,11 @@ import com.macxs.facerecogz.databinding.EmployeeListItemBinding;
 import com.macxs.facerecogz.databinding.NewFaceRegisterBinding;
 import com.sdsmdg.tastytoast.TastyToast;
 
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -56,8 +64,23 @@ public class EmployeeListadapter extends RecyclerView.Adapter<EmployeeListadapte
     PopupViews popupViews;
     Gson gson = new Gson();
     FirebaseFirestore db = FirebaseFirestore.getInstance();
+    String amstarttime = "8:00 AM";
+    String pmstarttime = "1:00 PM";
+    String pmEndtime = "5:00 PM";
+    String amEndtime = "12:00 PM";
+    FragmentManager fragmentManager;
+    DateTimeFormatter formatter = new DateTimeFormatterBuilder()
+            .appendPattern("h:mm a")
+            .optionalStart()
+            .appendPattern("hh:mm a")
+            .optionalEnd()
+            .toFormatter();
+    LocalTime defpmEndTime = LocalTime.parse("5:00 PM", formatter);
+    LocalTime defpmStartTime = LocalTime.parse("1:00 PM", formatter);
+    boolean changesMade = false;
 
-    public EmployeeListadapter(Activity context, ArrayList<Map<String, Object>> employees) {
+    public EmployeeListadapter(Activity context, FragmentManager fragmentManager, ArrayList<Map<String, Object>> employees) {
+        this.fragmentManager = fragmentManager;
         this.employees = employees;
         this.context = context;
         bottomSheetDialog = new BottomSheetDialog(context);
@@ -80,6 +103,10 @@ public class EmployeeListadapter extends RecyclerView.Adapter<EmployeeListadapte
         String oldfname = employeeData.get("firstname").toString();
         String odllname = employeeData.get("lastname").toString();
         String oldmname = employeeData.get("middlename").toString();
+        String inAmtime = employeeData.get("am-in-time").toString();
+        String outAmtime = employeeData.get("am-out-time").toString();
+        String inPmtime = employeeData.get("pm-in-time").toString();
+        String outPmtime = employeeData.get("pm-out-time").toString();
         editSheetDialog.setContentView(newFaceRegisterBinding.getRoot());
         editSheetDialog.show();
         newFaceRegisterBinding.actTitle.setText("Edit Details");
@@ -88,29 +115,88 @@ public class EmployeeListadapter extends RecyclerView.Adapter<EmployeeListadapte
         newFaceRegisterBinding.lname.setText(odllname);
         newFaceRegisterBinding.midname.setText(oldmname);
         newFaceRegisterBinding.imageCard.setVisibility(View.GONE);
+
+        newFaceRegisterBinding.mornChipIn.setText(inAmtime);
+        newFaceRegisterBinding.mornChipOut.setText(outAmtime);
+        newFaceRegisterBinding.noonChipIn.setText(inPmtime);
+        newFaceRegisterBinding.noonChipOut.setText(outPmtime);
+
         newFaceRegisterBinding.btClose.setOnClickListener(view -> {
             editSheetDialog.dismiss();
         });
-        newFaceRegisterBinding.conBtn.setOnClickListener(view -> {
-            String newFname = newFaceRegisterBinding.Fname.getText().toString();
-            String newLname = newFaceRegisterBinding.lname.getText().toString();
-            String newMname = newFaceRegisterBinding.midname.getText().toString();
-            String newEmail = newFaceRegisterBinding.email.getText().toString();
-            if (!odllname.equals(newLname) || !oldfname.equals(newFname) || !oldmname.equals(newMname) || !oldEmail.equals(newEmail)) {
-                newEmpdata.put("firstname", newFname);
-                newEmpdata.put("lastname", newLname);
-                newEmpdata.put("middlename", newMname);
-                newEmpdata.put("email", newEmail);
-                newEmpdata.put("face_data", gson.toJson(employeeData.get("face_data")));
-                editSheetDialog.dismiss();
-                updateEmpDetails(employeeData, newEmpdata);
+        View.OnClickListener changeTimeListener = view -> {
+            changeTime((Chip) view);
+        };
+        newFaceRegisterBinding.mornChipIn.setOnClickListener(changeTimeListener);
+        newFaceRegisterBinding.mornChipOut.setOnClickListener(changeTimeListener);
+        newFaceRegisterBinding.noonChipIn.setOnClickListener(changeTimeListener);
+        newFaceRegisterBinding.noonChipOut.setOnClickListener(changeTimeListener);
+        newFaceRegisterBinding.conBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String newFname = newFaceRegisterBinding.Fname.getText().toString();
+                String newLname = newFaceRegisterBinding.lname.getText().toString();
+                String newMname = newFaceRegisterBinding.midname.getText().toString();
+                String newEmail = newFaceRegisterBinding.email.getText().toString();
+
+                String newAmInTime = newFaceRegisterBinding.mornChipIn.getText().toString();
+                String newAmOutTime = newFaceRegisterBinding.mornChipOut.getText().toString();
+                String newPmInTime = newFaceRegisterBinding.noonChipIn.getText().toString();
+                String newPmOutTime = newFaceRegisterBinding.noonChipOut.getText().toString();
+
+                LocalTime amInTime = LocalTime.parse(newFaceRegisterBinding.mornChipIn.getText().toString(), formatter);
+                LocalTime pmInTime = LocalTime.parse(newFaceRegisterBinding.noonChipIn.getText().toString(), formatter);
+                LocalTime amOutime = LocalTime.parse(newFaceRegisterBinding.mornChipOut.getText().toString(), formatter);
+                LocalTime pmOutime = LocalTime.parse(newFaceRegisterBinding.noonChipOut.getText().toString(), formatter);
+                if (!odllname.equals(newLname) ||
+                        !oldfname.equals(newFname) ||
+                        !oldmname.equals(newMname) ||
+                        !inAmtime.equals(newAmInTime) ||
+                        !outAmtime.equals(newAmOutTime) ||
+                        !inPmtime.equals(newPmInTime) ||
+                        !outPmtime.equals(newPmOutTime) ||
+                        !oldEmail.equals(newEmail)) {
+                    changesMade = true;
+                }
+                if (changesMade) {
+                    newEmpdata.put("firstname", newFname);
+                    newEmpdata.put("lastname", newLname);
+                    newEmpdata.put("middlename", newMname);
+                    newEmpdata.put("email", newEmail);
+                    if (amInTime.isAfter(amOutime)) {
+                        popupViews.toastWarn("In time for morning cannot be after the out time");
+                    } else if (amOutime.isAfter(pmInTime)) {
+                        popupViews.toastWarn("Out time for morning cannot be after the in time for the afternoon");
+                    } else if (pmInTime.isAfter(pmOutime)) {
+                        popupViews.toastWarn("In time for afternoon cannot be after the out time for the afternoon");
+                    } else if (amOutime.isAfter(defpmStartTime)) {
+                        popupViews.toastWarn("Morning out attendance should not be assigned after the in attendance for afternoon");
+                    } else if (pmInTime.isAfter(defpmEndTime)) {
+                        popupViews.toastWarn("Afternoon attendance should not be assigned in the morning time");
+                    } else {
+                        newEmpdata.put("am-in-time", amstarttime);
+                        newEmpdata.put("am-out-time", amEndtime);
+                        newEmpdata.put("pm-in-time", pmstarttime);
+                        newEmpdata.put("pm-out-time", pmEndtime);
+                        updateEmpDetails(employeeData, newEmpdata);
+                        editSheetDialog.dismiss();
+                    }
+
+                } else {
+                    popupViews.toastWarn("No changes were made");
+                }
             }
         });
+        editSheetDialog.setOnDismissListener(dialogInterface -> changesMade = false);
     }
 
     private void updateEmpDetails(Map employeeData, Map<String, Object> newEmpdata) {
         String empID = employeeData.get("employee-id").toString();
-
+        String face_data = gson.toJson(getFormattedEmployeeFaceData(employeeData.get("face_data")));
+        String smile_face_data = gson.toJson(getFormattedEmployeeFaceData(employeeData.get("smile_face_data")));
+        newEmpdata.put("face_data", face_data);
+        newEmpdata.put("smile_face_data", smile_face_data);
         db.collection("employees").document(empID).set(newEmpdata).addOnSuccessListener(unused -> {
             popupViews.toastSuccess("Details updated");
 
@@ -121,6 +207,20 @@ public class EmployeeListadapter extends RecyclerView.Adapter<EmployeeListadapte
 
         });
     }
+    public float[][] getFormattedEmployeeFaceData(Object data) {
+        String facedataStr = (String) data;
+        float[][] output = new float[1][192];
+
+        List<?> arrayList = (List<?>) gson.fromJson(facedataStr, List.class);
+        List<?> innerList = (List<?>) arrayList.get(0);
+
+        innerList.forEach(item -> {
+            if (item instanceof Double) {
+                output[0][(int) innerList.indexOf(item)] = ((Double) item).floatValue();
+            }
+        });
+ return output;
+    }
 
     private void showPopup(Map employeeData, int position) {
         String fname = employeeData.get("firstname").toString();
@@ -129,6 +229,7 @@ public class EmployeeListadapter extends RecyclerView.Adapter<EmployeeListadapte
         String email = employeeData.get("email").toString();
         empPopupBinding.profileName.setText(fname + " " + lname);
         empPopupBinding.emailprofile.setText(email);
+
         Glide.with(context).load(imgIconUrl).into(empPopupBinding.profileAvatar);
         empPopupBinding.editBtn.setOnClickListener(view -> {
             editEmployeeDetails(employeeData, position);
@@ -182,7 +283,8 @@ public class EmployeeListadapter extends RecyclerView.Adapter<EmployeeListadapte
                 });
 
     }
-    private void removeItemAdaper(int position){
+
+    private void removeItemAdaper(int position) {
         this.notifyItemRemoved(position);
     }
 
@@ -205,7 +307,7 @@ public class EmployeeListadapter extends RecyclerView.Adapter<EmployeeListadapte
                 });
             } else {
                 // Handle query failure
-                popupViews.toastConfused("Unable to get attendance data for this employee: "+task.getException().getMessage());
+                popupViews.toastConfused("Unable to get attendance data for this employee: " + task.getException().getMessage());
             }
         });
     }
@@ -221,14 +323,55 @@ public class EmployeeListadapter extends RecyclerView.Adapter<EmployeeListadapte
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         String fname = employees.get(position).get("firstname").toString();
         String lname = employees.get(position).get("lastname").toString();
-        holder.viewBinding.peopleName.setText(lname + ", " + fname);
+        boolean unregistered = employees.get(position).get("face_data").toString().equals("unregistered");
         holder.viewBinding.peopleEmail.setText(employees.get(position).get("email").toString());
         Glide.with(context).load(imgIconUrl).into(holder.viewBinding.profAvatar);
+        if (unregistered){
+            holder.viewBinding.peopleName.setText(lname + ", " + fname+"(Face Not registered)");
+        }else {
+            holder.viewBinding.peopleName.setText(lname + ", " + fname);
+        }
         holder.viewBinding.clicker.setOnClickListener(view -> {
             showPopup(employees.get(position), position);
         });
 
     }
+
+    private void changeTime(Chip chipTime) {
+        MaterialTimePicker.Builder materialTimeBuilder = new MaterialTimePicker.Builder();
+//        materialTimeBuilder.setMinute(10).setMinute(10).setTimeFormat(TimeFormat.CLOCK_12H);
+        materialTimeBuilder.setHour(12);
+        MaterialTimePicker materialTimePicker = materialTimeBuilder.build();
+        materialTimePicker.addOnPositiveButtonClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                int hour = materialTimePicker.getHour();
+                int min = materialTimePicker.getMinute();
+                String hourStr = String.valueOf(hour);
+                String minuteStr = String.valueOf(min);
+                String time = "";
+                String suffix = (hour < 12) ? "AM" : "PM";
+                if (hour < 12) {
+                } else {
+                    hourStr = String.valueOf((hour == 12) ? 12 : hour - 12);
+                }
+                if (min < 10) {
+                    minuteStr = minuteStr + 0;
+                }
+                if (hour == 0) {
+                    hourStr = String.valueOf(12);
+                }
+                time = hourStr + ":" + minuteStr + " " + suffix;
+                chipTime.setText(time);
+                Log.e("pmEndtime", pmEndtime);
+
+                materialTimePicker.removeOnPositiveButtonClickListener(this);
+            }
+        });
+//        materialTimePicker.show(( (Activity) context).getFragmentManager(), "starttime");
+        materialTimePicker.show(fragmentManager, "starttime");
+    }
+
 
     @Override
     public int getItemCount() {

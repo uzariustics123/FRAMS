@@ -46,6 +46,7 @@ import com.macxs.facerecogz.databinding.NewFaceRegisterBinding;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class EmployeesFragment extends Fragment {
@@ -198,7 +199,7 @@ public class EmployeesFragment extends Fragment {
             employeeFragmentBinding.employeeList.setVisibility(View.VISIBLE);
             employeeFragmentBinding.employeeErrorLayout.setVisibility(View.GONE);
 
-            employeeListAdpater = new EmployeeListadapter(getActivity(), employees);
+            employeeListAdpater = new EmployeeListadapter(getActivity(), getActivity().getSupportFragmentManager() ,employees);
             employeeFragmentBinding.employeeList.setAdapter(employeeListAdpater);
             employeeFragmentBinding.employeeList.setLayoutManager(new LinearLayoutManager(getActivity()));
             employeeFragmentBinding.employeeList.scheduleLayoutAnimation();
@@ -220,7 +221,8 @@ public class EmployeesFragment extends Fragment {
                     Log.d("asdw", document.getId() + " => " + document.getData());
                     Map employee = document.getData();
                     employee.put("employee-id", document.getId());
-                    employees.add(formatEmployeeFaceData(employee));
+                    employees.add(employee);
+//                    employees.add(formatEmployeeFaceData(employee));
                 }
                 totalemployees.addAll(employees);
                 Log.e("totalemps", String.valueOf(totalemployees.size()));
@@ -234,17 +236,25 @@ public class EmployeesFragment extends Fragment {
 
     public Map<String, Object> formatEmployeeFaceData(Map<String, Object> employeeData) {
         String facedateStr = (String) employeeData.get("face_data");
-//        TypeToken<ArrayList<Object>> token = new TypeToken<ArrayList<Object>>() {};
-        int OUTPUT_SIZE = 192;
-        float[][] output = new float[1][OUTPUT_SIZE];
-        ArrayList arrayList = (ArrayList) gson.fromJson(facedateStr, ArrayList.class);
-        arrayList = (ArrayList) arrayList.get(0);
-        for (int counter = 0; counter < arrayList.size(); counter++) {
-            output[0][counter] = ((Double) arrayList.get(counter)).floatValue();
-        }
-        System.out.println("Entry output " + Arrays.deepToString(output));
-        employeeData.put("face_data", output);
+        String smilefacedateStr = (String) employeeData.get("smile_face_data");
+
+        employeeData.put("face_data", getFormattedEmployeeFaceData(facedateStr));
+        employeeData.put("smile_face_data", getFormattedEmployeeFaceData(smilefacedateStr));
         return employeeData;
+    }
+    public float[][] getFormattedEmployeeFaceData(Object data) {
+        String facedataStr = (String) data;
+        float[][] output = new float[1][192];
+
+        List<?> arrayList = (List<?>) gson.fromJson(facedataStr, List.class);
+        List<?> innerList = (List<?>) arrayList.get(0);
+
+        innerList.forEach(item -> {
+            if (item instanceof Double) {
+                output[0][(int) innerList.indexOf(item)] = ((Double) item).floatValue();
+            }
+        });
+        return output;
     }
 
     @Override

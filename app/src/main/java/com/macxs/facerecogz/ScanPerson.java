@@ -35,10 +35,8 @@ import android.content.Intent;
 import android.content.res.AssetFileDescriptor;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.graphics.Paint;
 import android.graphics.RectF;
 import android.media.Image;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.text.Editable;
@@ -52,7 +50,6 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import com.macxs.facerecogz.Utils.BoundingBoxOverlay;
 import com.macxs.facerecogz.Utils.FaceGraphic;
 import com.macxs.facerecogz.Utils.GraphicOverlay;
 import com.macxs.facerecogz.Utils.MyAudioManager;
@@ -70,19 +67,15 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
-import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
@@ -117,6 +110,7 @@ public class ScanPerson extends BaseActivity {
     BottomSheetDialog recogPreviewDialog;
     Handler mainHandler;
     Runnable recogRunnable;
+    boolean isLegalExit = true;
     Bitmap currentface = null;
     String[] months = {"January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"};
 
@@ -160,6 +154,11 @@ public class ScanPerson extends BaseActivity {
         initFirebases();
         initComponents();
         //load model
+
+//        DevicePolicyManager dpm =
+//                (DevicePolicyManager) this.getSystemService(Context.DEVICE_POLICY_SERVICE);
+//        dpm.setLockTaskPackages(adminName, );
+
         if (EasyPermissions.hasPermissions(this, perms)) {
             // Already have permission, do the thing
             // ...
@@ -192,6 +191,11 @@ public class ScanPerson extends BaseActivity {
         };
         binding.adminPanelBtn.setOnClickListener(view -> {
             inputPin();
+        });
+        binding.adminPanelBtn.setOnLongClickListener(view -> {
+            this.stopLockTask();
+            finish();
+            return false;
         });
         binding.rotateCam.setOnClickListener(v -> {
             if (cam_face == CameraSelector.LENS_FACING_BACK) {
@@ -366,7 +370,7 @@ public class ScanPerson extends BaseActivity {
 
         });
     }
-
+//load Ternsorflow ai model to interpret face embeddings or face features data
     private void loadModel() {
         try {
             tfLite = new Interpreter(loadModelFile(this, modelFile));
@@ -440,7 +444,7 @@ public class ScanPerson extends BaseActivity {
                         //Scale the acquired Face to 112*112 which is required input for model
                         Bitmap scaled = BitmapUtils.getResizedBitmap(cropped_face, 112, 112);
                         if (cropped_face.getHeight() > 200) {
-                            //accepted face
+                            //accept closest face position from camera
                             if (camStartCapturing) {
                                 processFace(face, scaled, frame_bmp1);
                             }
@@ -471,7 +475,7 @@ public class ScanPerson extends BaseActivity {
         });
         cameraProvider.bindToLifecycle((LifecycleOwner) this, cameraSelector, imageAnalysis, preview);
     }
-
+//process face and draw graphics to surface view of camera
     private void processFace(Face face, Bitmap scaled, Bitmap frame_bmp1) {
         //check head orientation if looking up or down
         if (face.getHeadEulerAngleX() < -8) {
@@ -482,7 +486,9 @@ public class ScanPerson extends BaseActivity {
             statusText("Reduce facing up too much");
             graphicOverlay.add(new FaceGraphic(graphicOverlay, face, Color.RED, Color.RED, false));
             graphicOverlay.setImageSourceInfo(frame_bmp1.getWidth(), frame_bmp1.getHeight(), flipX);
-        } else if (face.getHeadEulerAngleY() < -5) {
+        }
+        // or if facing sideways
+        else if (face.getHeadEulerAngleY() < -5) {
             statusText("Try to minimize looking at the right");
             graphicOverlay.add(new FaceGraphic(graphicOverlay, face, Color.RED, Color.RED, false));
             graphicOverlay.setImageSourceInfo(frame_bmp1.getWidth(), frame_bmp1.getHeight(), flipX);
@@ -490,7 +496,7 @@ public class ScanPerson extends BaseActivity {
             statusText("Try to minimize looking at the left");
             graphicOverlay.add(new FaceGraphic(graphicOverlay, face, Color.RED, Color.RED, false));
             graphicOverlay.setImageSourceInfo(frame_bmp1.getWidth(), frame_bmp1.getHeight(), flipX);
-        } else {
+        } else {// finally accept face with the best orientation and position
             graphicOverlay.add(new FaceGraphic(graphicOverlay, face, Color.GREEN, Color.GREEN, false));
             graphicOverlay.setImageSourceInfo(frame_bmp1.getWidth(), frame_bmp1.getHeight(), flipX);
             recognizeImage(scaled, face); //Send scaled bitmap to create face data.
@@ -523,9 +529,6 @@ public class ScanPerson extends BaseActivity {
         float[] facedata = getFaceDataFromBitmap(imageBitmap)[0];
         String currentRecogID = "";
         List<Map<String, Object>> closesMatches = getClosestMatches(facedata);
-
-
-
 
         if (closesMatches.size() > 0 && RecogPhase == 0) {
             currentRecogID = closesMatches.get(0).get("employee-id").toString();
@@ -613,37 +616,37 @@ public class ScanPerson extends BaseActivity {
         CollectionReference attendanceRef = db.collection("attendance");
         Query query = attendanceRef.orderBy("time", Query.Direction.DESCENDING);
         newAttendance.put("employee-id", employeeData.get("employee-id"));
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.O_MR1) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
+        {
             LocalDateTime localDateTime = LocalDateTime.now();
             newAttendance.put("month", localDateTime.getMonthValue());
             newAttendance.put("day", localDateTime.getDayOfMonth());
             newAttendance.put("year", localDateTime.getYear());
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
             String formattedTime = localDateTime.format(formatter);
             newAttendance.put("time", formattedTime);
-        } else {
-            Calendar calendar = Calendar.getInstance();
-            Date datenow = calendar.getTime();
-            SimpleDateFormat dateFormatter = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
-            SimpleDateFormat timeFormatter = new SimpleDateFormat("h:mm a", Locale.getDefault());
-            String time = timeFormatter.format(calendar.getTime());
-            String dateTime = dateFormatter.format(calendar.getTime());
-            newAttendance.put("year", calendar.get(Calendar.MONTH));
-            newAttendance.put("month", calendar.get(Calendar.YEAR));
-            newAttendance.put("day", calendar.get(Calendar.DAY_OF_MONTH));
-            newAttendance.put("time", time);
         }
+        String defInTimeAMstr  = String.valueOf(employeeData.get("am-in-time"));
+        String defOutTimeAMstr  = String.valueOf(employeeData.get("am-out-time"));
+        String defInTimePMstr  = String.valueOf(employeeData.get("pm-in-time"));
+        String defOutTimePMstr  = String.valueOf(employeeData.get("pm-out-time"));
+
+        LocalTime defInTimeAM = LocalTime.parse(defInTimeAMstr, formatter);
+        LocalTime defOutTimeAM = LocalTime.parse(defOutTimeAMstr, formatter);
+        LocalTime defInTimePM = LocalTime.parse(defInTimePMstr, formatter);
+        LocalTime defOutTimePM = LocalTime.parse(defOutTimePMstr, formatter);
         db.collection("attendance")
                 .whereEqualTo("employee-id", employeeData.get("employee-id"))
                 .whereEqualTo("month", newAttendance.get("month"))
                 .whereEqualTo("year", newAttendance.get("year"))
                 .whereEqualTo("day", newAttendance.get("day")).get().addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        int amChances = 2;
-                        int pmChances = 2;
+                        boolean arriveAM = false;
+                        boolean departAM = false;
+                        boolean arrivePM = false;
+                        boolean departPM = false;
                         LocalDateTime localDateTime = LocalDateTime.now();
                         LocalTime localTimeNow = LocalTime.now();
-                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
+//                        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("h:mm a");
                         LocalTime amEndTime = LocalTime.parse("11:59 AM", formatter);
                         LocalTime pmStartTime = LocalTime.parse("1:00 PM", formatter);
                         String formattedTime = localDateTime.format(formatter);
@@ -652,44 +655,69 @@ public class ScanPerson extends BaseActivity {
                         } else {
                             attendanceType = "departure";
                         }
-                        Log.e("task size", String.valueOf(task.getResult().size()));
-                        Log.e("task modulo", String.valueOf(task.getResult().size() % 2));
+//                        Log.e("task size", String.valueOf(task.getResult().size()));
+//                        Log.e("task modulo", String.valueOf(task.getResult().size() % 2));
                         for (QueryDocumentSnapshot document : task.getResult()) {
-                            Log.d("asdw", document.getId() + " => " + document.getData());
-                            Map employee = document.getData();
-                            employee.put("employee-id", document.getId());
-                            String attTypeInLoop = document.get("type").toString();
-                            if ((employee.get("time").toString().contains("AM") && attTypeInLoop.equalsIgnoreCase("arrival"))
-                                    || (localTimeNow.isAfter(amEndTime) && localTimeNow.isBefore(pmStartTime)) && attTypeInLoop.equalsIgnoreCase("departure")) {
-                                Log.e("am chances", String.valueOf(amChances));
-                                Log.e("time", employee.get("time").toString());
-                                Log.e("type", attTypeInLoop);
-                                amChances--;
-                            } else if ((localTimeNow.isAfter(amEndTime) && localTimeNow.isBefore(pmStartTime) && attTypeInLoop.equalsIgnoreCase("arrival")) ||
-                                    (employee.get("time").toString().contains("PM") && attTypeInLoop.equalsIgnoreCase("departure"))) {
-                                Log.e("pm chances", String.valueOf(pmChances));
-                                Log.e("time", employee.get("time").toString());
-                                Log.e("type", attTypeInLoop);
-                                pmChances--;
-
+//                            Log.d("asdw", document.getId() + " => " + document.getData());
+                            Map<String, Object> attendance = document.getData();
+                            LocalTime lastTimeAtt = LocalTime.parse(String.valueOf(attendance.get("time")), formatter);
+                            String lastAttType = document.get("attendance-type").toString();
+                            attendance.put("employee-id", document.getId());
+                            if (lastAttType.equals("am-in")) {//handle am arrival
+                                arriveAM = true;
+                            }  else if (lastAttType.equals("am-out")) {//handle am late and early out
+                                departAM = true;
+                            } else if (lastAttType.equals("pm-in")) {//handle pm in
+                                arrivePM = true;
+                            } else if (lastAttType.equals("pm-out")) {//handle pm early out
+                                departPM = true;
                             }
+                            Log.e( formattedTime+" is before", defInTimePMstr );
+//                                Log.e("time", attendance.get("time").toString());
+//                                Log.e("type", lastAttType);
+//                                Log.e("results", String.valueOf(task.getResult().size()));
                         }
 
 
-                        if (task.getResult().size() >= 4) {
+                        if (departPM) {
                             TastyToast.makeText(getBaseContext(), "you already took your attendance for today.", TastyToast.LENGTH_LONG, TastyToast.CONFUSING);
                             popupViews.hideFaceLoading();
                             myAudioManager.play(MyAudioManager.youalreadyAudio);
-                            camStartCapturing = true;
-                        } else if (amChances <= 0) {
+                            mainHandler.postDelayed(recogRunnable, 4000);
+                        } else if (localTimeNow.isBefore(defOutTimeAM) && departAM) {
                             TastyToast.makeText(getBaseContext(), "you already took your attendance for this Morning.", TastyToast.LENGTH_LONG, TastyToast.ERROR);
                             popupViews.hideFaceLoading();
-                            camStartCapturing = true;
-                        } else if (pmChances <= 0) {
-                            TastyToast.makeText(getBaseContext(), "you already took your attendance for this Afternoon.", TastyToast.LENGTH_LONG, TastyToast.ERROR);
-                            popupViews.hideFaceLoading();
-                            camStartCapturing = false;
+                            mainHandler.postDelayed(recogRunnable, 4000);
                         } else {
+                            //am in
+                            if (localTimeNow.isBefore(defOutTimeAM.minusHours(1))){
+                                if (!arriveAM) {
+                                    attendanceType = "arrival";
+                                    newAttendance.put("attendance-type", "am-in");
+                                }
+                                 else if(!departAM) {//am early out
+                                    newAttendance.put("attendance-type", "am-out");
+                                    attendanceType = "departure";
+                                }
+                            }else if (localTimeNow.isAfter(defOutTimeAM.minusHours(1)) && localTimeNow.isBefore(defInTimePM) && !departAM) {//am late out
+                                    newAttendance.put("attendance-type", "am-out");
+                                    attendanceType = "departure";
+                            }
+//                            handle afternoon time
+                            else if (localTimeNow.isBefore(defOutTimePM.minusHours(1))){
+                                if (!arrivePM) {
+                                    newAttendance.put("attendance-type", "pm-in");
+                                    attendanceType = "arrival";
+                                }else if(!departPM) {
+                                    newAttendance.put("attendance-type", "pm-out");
+                                    attendanceType = "departure";
+                                }
+                            }
+//                            late outs pm
+                            else if(localTimeNow.isAfter(defOutTimePM.minusHours(1)) && !departPM){
+                                    newAttendance.put("attendance-type", "pm-out");
+                                    attendanceType = "departure";
+                            }
                             saveAttendance(newAttendance, attendanceType, employeeData);
                         }
                     } else {
@@ -747,6 +775,7 @@ public class ScanPerson extends BaseActivity {
         } catch (Exception e) {
 
         }
+//        isLegalExit = true;
         startActivity(new Intent(this, MainActivity.class));
         finish();
     }
@@ -760,9 +789,14 @@ public class ScanPerson extends BaseActivity {
                 for (QueryDocumentSnapshot document : task.getResult()) {
                     Map employee = document.getData();
                     employee.put("employee-id", document.getId());
-                    formatEmployeeFaceData(employee, "face_data");
-                    formatEmployeeFaceData(employee, "smile_face_data");
-                    registeredEmployees.add(employee);
+                    if (employee.get("face_data").toString().equals("unregistered")){
+
+                    }else{
+                        formatEmployeeFaceData(employee, "face_data");
+                        formatEmployeeFaceData(employee, "smile_face_data");
+                        registeredEmployees.add(employee);
+                    }
+
 
                 }
                 camStartCapturing = true;
@@ -898,16 +932,21 @@ public class ScanPerson extends BaseActivity {
     }
 
     public void formatEmployeeFaceData(Map<String, Object> employeeData, String key) {
-        String facedateStr = (String) employeeData.get(key);
+//        String facedataStr = (String) employeeData.get(key);
 //        TypeToken<ArrayList<Object>> token = new TypeToken<ArrayList<Object>>() {};
-        int OUTPUT_SIZE = 192;
+        String facedataStr = (String) employeeData.get(key);
         float[][] output = new float[1][OUTPUT_SIZE];
-        ArrayList arrayList = (ArrayList) gson.fromJson(facedateStr, ArrayList.class);
-        arrayList = (ArrayList) arrayList.get(0);
-        for (int counter = 0; counter < arrayList.size(); counter++) {
-            output[0][counter] = ((Double) arrayList.get(counter)).floatValue();
-        }
-        System.out.println("Entry output " + Arrays.deepToString(output));
+
+        List<?> arrayList = (List<?>) gson.fromJson(facedataStr, List.class);
+        List<?> innerList = (List<?>) arrayList.get(0);
+
+        innerList.forEach(item -> {
+            if (item instanceof Double) {
+                output[0][(int) innerList.indexOf(item)] = ((Double) item).floatValue();
+            }
+        });
+
+        System.out.println("Entry output "+ employeeData.get("firstname") + " " + Arrays.deepToString(output));
         employeeData.put(key, output);
     }
 
@@ -933,6 +972,21 @@ public class ScanPerson extends BaseActivity {
     @Override
     public void onBackPressed() {
 //        super.onBackPressed();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+//        if (!isLegalExit){
+//            Intent intent = new Intent(this, this.getClass());
+//            startActivity(intent);
+//        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+
     }
 
     @Override

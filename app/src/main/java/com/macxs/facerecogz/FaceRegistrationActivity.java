@@ -691,9 +691,13 @@ public class FaceRegistrationActivity extends BaseActivity {
                 .add(employeeData)
                 .addOnSuccessListener(documentReference -> {
                     Toast.makeText(this, "Employee saved", Toast.LENGTH_SHORT).show();
+                    popupViews.hideFaceLoading();
+                    finish();
                 })
                 .addOnFailureListener(e -> {
                     Toast.makeText(this, "Error saving employee" + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    popupViews.hideFaceLoading();
+                    finish();
                 }).addOnCompleteListener(task -> {
                     popupViews.hideFaceLoading();
                     finish();

@@ -148,7 +148,6 @@ public class AttendanceReport extends AppCompatActivity {
     public void initFirebases() {
         firebaseApp = FirebaseApp.initializeApp(this);
         firebaseAuth = FirebaseAuth.getInstance();
-
     }
 
     void print(String htmlCode) {
